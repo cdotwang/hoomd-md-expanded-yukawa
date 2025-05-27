@@ -1,5 +1,5 @@
 # TODO: Set COMPONENT_NAME to the name of your Python package.
-set(COMPONENT_NAME template)
+set(COMPONENT_NAME expanded_Yukawa)
 
 # TODO: List all host C++ source code files in _${COMPONENT_NAME}_sources.
 set(_${COMPONENT_NAME}_sources
