@@ -1,8 +1,8 @@
 // Copyright (c) 2009-2025 The Regents of the University of Michigan.
 // Part of HOOMD-blue, released under the BSD 3-Clause License.
 
-#ifndef __PAIR_EVALUATOR_EXAMPLE_H__
-#define __PAIR_EVALUATOR_EXAMPLE_H__
+#ifndef __PAIR_EVALUATOR_EXPANDEDYUKAWA_H__
+#define __PAIR_EVALUATOR_EXPANDEDYUKAWA_H__
 
 #ifndef __HIPCC__
 #include <string>
@@ -10,8 +10,8 @@
 
 #include "hoomd/HOOMDMath.h"
 
-/*! \file EvaluatorPairExample.h
-    \brief Defines the pair evaluator class for the example potential
+/*! \file EvaluatorPairExpandedYukawa.h
+    \brief Defines the pair evaluator class for the expanded Yukawa potential
 */
 
 // need to declare these class methods with __device__ qualifiers when building in nvcc
@@ -30,14 +30,15 @@ namespace hoomd
 namespace md
     {
 
-class EvaluatorPairExample
+class EvaluatorPairExpandedYukawa
     {
     public:
     //! Define the parameter type used by this pair potential evaluator
     struct param_type
         {
-        Scalar k;     //!< Spring constant
-        Scalar sigma; //!< Minima of the spring
+        Scalar epsilon;
+        Scalar kappa;
+        Scalar delta;
 
         DEVICE void load_shared(char*& ptr, unsigned int& available_bytes) { }
 
@@ -52,19 +53,21 @@ class EvaluatorPairExample
 #endif
 
 #ifndef __HIPCC__
-        param_type() : k(0), sigma(0) { }
+        param_type() : epsilon(0), kappa(0), delta(0) { }
 
         param_type(pybind11::dict v, bool managed = false)
             {
-            k = v["k"].cast<Scalar>();
-            sigma = v["sigma"].cast<Scalar>();
+            epsilon = v["epsilon"].cast<Scalar>();
+            kappa = v["kappa"].cast<Scalar>();
+            delta = v["delta"].cast<Scalar>();
             }
 
         pybind11::dict asDict()
             {
             pybind11::dict v;
-            v["k"] = k;
-            v["sigma"] = sigma;
+            v["epsilon"] = epsilon;
+            v["kappa"] = kappa;
+            v["delta"] = delta;
             return v;
             }
 #endif
@@ -80,12 +83,12 @@ class EvaluatorPairExample
         \param _rcutsq Squared distance at which the potential goes to 0
         \param _params Per type pair parameters of this potential
     */
-    DEVICE EvaluatorPairExample(Scalar _rsq, Scalar _rcutsq, const param_type& _params)
-        : rsq(_rsq), rcutsq(_rcutsq), k(_params.k), sigma(_params.sigma)
+    DEVICE EvaluatorPairExpandedYukawa(Scalar _rsq, Scalar _rcutsq, const param_type& _params)
+        : rsq(_rsq), rcutsq(_rcutsq), epsilon(_params.epsilon), kappa(_params.kappa), delta(_params.delta)
         {
         }
 
-    //! Example doesn't use charge
+    //! Expanded Yukawa doesn't use charge
     DEVICE static bool needsCharge()
         {
         return false;
@@ -110,21 +113,26 @@ class EvaluatorPairExample
     DEVICE bool evalForceAndEnergy(Scalar& force_divr, Scalar& pair_eng, bool energy_shift)
         {
         // compute the force divided by r in force_divr
-        if (rsq < rcutsq)
+        if (rsq < rcutsq && epsilon != 0)
             {
-            Scalar r = fast::sqrt(rsq);
-            Scalar rinv = 1 / r;
-            Scalar overlap = sigma - r;
+            Scalar rinv = fast::rsqrt(rsq);
+            Scalar r = Scalar(1.0) / rinv;
+            Scalar rmd = r - delta;
+            Scalar rmdinv = Scalar(1.0) / rmd;
+            Scalar rmd_sq = (r - delta) * (r - delta);
+            Scalar rmd2inv = Scalar(1.0) / rmd_sq;
+            Scalar exp_val = fast::exp(-kappa * rmd);
 
-            force_divr = k * overlap * rinv;
-
-            pair_eng = Scalar(0.5) * k * overlap * overlap;
+            force_divr = epsilon * exp_val * rmd2inv * (rinv + kappa * rmd / r);
+            pair_eng = epsilon * exp_val * rmdinv;
 
             if (energy_shift)
                 {
-                Scalar rcut = fast::sqrt(rcutsq);
-                Scalar cut_overlap = sigma - rcut;
-                pair_eng -= Scalar(0.5) * k * cut_overlap * cut_overlap;
+                Scalar rcutinv = fast::rsqrt(rcutsq);
+                Scalar rcut = Scalar(1.0) / rcutinv;
+                Scalar rcutmd = rcut - delta;
+                Scalar rcutmdinv = Scalar(1.0) / rcutmd;
+                pair_eng -= epsilon * fast::exp(-kappa * rcutmd) * rcutmdinv;
                 }
             return true;
             }
@@ -132,13 +140,13 @@ class EvaluatorPairExample
             return false;
         }
 
-    //! Example doesn't eval LRC integrals
+    //! Expanded Yukawa doesn't eval LRC integrals
     DEVICE Scalar evalPressureLRCIntegral()
         {
         return 0;
         }
 
-    //! Example doesn't eval LRC integrals
+    //! Expanded Yukawa doesn't eval LRC integrals
     DEVICE Scalar evalEnergyLRCIntegral()
         {
         return 0;
@@ -150,7 +158,7 @@ class EvaluatorPairExample
      */
     static std::string getName()
         {
-        return std::string("example_pair");
+        return std::string("expanded_yukawa");
         }
 
     std::string getShapeSpec() const
@@ -160,13 +168,14 @@ class EvaluatorPairExample
 #endif
 
     protected:
-    Scalar rsq;    //!< Stored rsq from the constructor
-    Scalar rcutsq; //!< Stored rcutsq from the constructor
-    Scalar k;      //!< Stored k from the constructor
-    Scalar sigma;  //!< Stored sigma from the constructor
+    Scalar rsq;     //!< Stored rsq from the constructor
+    Scalar rcutsq;  //!< Stored rcutsq from the constructor
+    Scalar epsilon; //!< Stored epsilon from the constructor
+    Scalar kappa;   //!< Stored kappa from the constructor
+    Scalar delta;   //!< Stored delta from the constructor
     };
 
     } // end namespace md
     } // end namespace hoomd
 
-#endif // __PAIR_EVALUATOR_EXAMPLE_H__
+#endif // __PAIR_EVALUATOR_EXPANDEDYUKAWA_H__

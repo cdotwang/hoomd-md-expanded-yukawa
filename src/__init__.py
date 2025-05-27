@@ -5,6 +5,6 @@
 # TODO: Document your component.
 
 from . import version
-from .pair import ExamplePair
+from .pair import ExpandedYukawa
 
-__all__ = ['ExamplePair']
+__all__ = ['ExpandedYukawa']

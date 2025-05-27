@@ -2,7 +2,7 @@
 // Part of HOOMD-blue, released under the BSD 3-Clause License.
 
 // TODO: Include the header files of classes that will be exported to Python.
-#include "EvaluatorPairExample.h"
+#include "EvaluatorPairExpandedYukawa.h"
 
 #include "hoomd/md/PotentialPair.h"
 #include <pybind11/pybind11.h>
@@ -22,11 +22,11 @@ PYBIND11_MODULE(_template, m)
     {
     // TODO: Call export_Class(m) for each C++ class to be exported to Python.
 
-    detail::export_PotentialPair<EvaluatorPairExample>(m, "PotentialPairExample");
+    detail::export_PotentialPair<EvaluatorPairExpandedYukawa>(m, "PotentialPairExpandedYukawa");
 #ifdef ENABLE_HIP
     // TODO: Call export_ClassGPU(m) for each GPU enabled C++ class to be exported
     // to Python.
-    detail::export_PotentialPairGPU<EvaluatorPairExample>(m, "PotentialPairExampleGPU");
+    detail::export_PotentialPairGPU<EvaluatorPairExample>(m, "PotentialPairExpandedYukawaGPU");
 #endif
     }
 
