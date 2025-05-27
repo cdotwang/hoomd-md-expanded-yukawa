@@ -18,7 +18,7 @@ namespace md
 
 // TODO: Set the name of the python module to match ${COMPONENT_NAME} (set in
 // CMakeLists.txt), prefixed with an underscore.
-PYBIND11_MODULE(_template, m)
+PYBIND11_MODULE(_expanded_Yukawa, m)
     {
     // TODO: Call export_Class(m) for each C++ class to be exported to Python.
 
