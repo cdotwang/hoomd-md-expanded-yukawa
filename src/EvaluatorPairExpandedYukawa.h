@@ -123,7 +123,7 @@ class EvaluatorPairExpandedYukawa
             Scalar rmd2inv = Scalar(1.0) / rmd_sq;
             Scalar exp_val = fast::exp(-kappa * rmd);
 
-            force_divr = epsilon * exp_val * rmd2inv * (rinv + kappa * rmd / r);
+            force_divr = epsilon * exp_val * rmd2inv * (kappa * rmd * rinv + rinv);
             pair_eng = epsilon * exp_val * rmdinv;
 
             if (energy_shift)

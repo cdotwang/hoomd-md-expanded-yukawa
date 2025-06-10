@@ -6,10 +6,10 @@
 # Import the C++ module.
 from hoomd.data.parameterdicts import TypeParameterDict
 from hoomd.data.typeparam import TypeParameter
+from hoomd.expanded_Yukawa import _expanded_Yukawa
 
 # Import the hoomd Python package and other necessary components.
 from hoomd.md import pair
-from hoomd.expanded_Yukawa import _expanded_Yukawa
 
 
 class ExpandedYukawa(pair.Pair):
@@ -25,6 +25,6 @@ class ExpandedYukawa(pair.Pair):
         params = TypeParameter(
             'params',
             'particle_types',
-            TypeParameterDict(epsilon=float, kappa=float, delta=float, len_keys=3),
+            TypeParameterDict(epsilon=float, kappa=float, delta=float, len_keys=2),
         )
         self._add_typeparam(params)
