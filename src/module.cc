@@ -26,7 +26,7 @@ PYBIND11_MODULE(_expanded_Yukawa, m)
 #ifdef ENABLE_HIP
     // TODO: Call export_ClassGPU(m) for each GPU enabled C++ class to be exported
     // to Python.
-    detail::export_PotentialPairGPU<EvaluatorPairExample>(m, "PotentialPairExpandedYukawaGPU");
+    detail::export_PotentialPairGPU<EvaluatorPairExpandedYukawa>(m, "PotentialPairExpandedYukawaGPU");
 #endif
     }
 
